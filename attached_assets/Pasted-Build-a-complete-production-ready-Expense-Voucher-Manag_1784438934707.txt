@@ -1,0 +1,198 @@
+Build a complete, production-ready Expense Voucher Management System as a full-stack web application.
+
+IMPORTANT:
+Generate the complete website with proper folder structure and working code. Do not use placeholders or TODOs.
+
+Technology Stack:
+- React.js (Vite)
+- Tailwind CSS
+- React Router
+- Axios
+- Framer Motion
+- React Hook Form
+
+Backend:
+- Node.js
+- Express.js
+- REST APIs
+- JWT Authentication
+- bcrypt
+- Multer for image uploads
+
+Database:
+- MySQL (do not use SQLite, Firebase, Supabase, MongoDB, or PostgreSQL)
+
+Project Objective:
+
+ABC Company currently manages employee expense vouchers manually. Employees create vouchers, obtain approval from the Director, and submit them to the Accounts Team for reimbursement.
+
+Develop a web-based Expense Voucher Management System that digitizes the complete voucher creation, approval, and reimbursement workflow.
+
+The application should:
+- Replace the manual voucher process.
+- Allow employees to create and submit vouchers.
+- Allow Directors to approve or reject vouchers.
+- Allow Accounts Team to process approved vouchers.
+- Allow employees to track voucher status.
+- Maintain a centralized repository.
+- Use role-based authentication and authorization.
+
+User Roles:
+
+Employee
+- Login
+- Dashboard
+- Create Voucher
+- Save Draft
+- Edit Draft
+- Delete Draft
+- Submit Voucher
+- Upload Signature
+- View only own vouchers
+- View voucher details
+- Track voucher status
+
+Director
+- Login
+- Dashboard
+- View all vouchers
+- View pending approvals
+- Search
+- Filter
+- Sort
+- Approve vouchers
+- Reject vouchers
+- Upload Director signature
+- Enter rejection reason
+
+Accounts Team
+- Login
+- Dashboard
+- View all vouchers
+- Search
+- Filter
+- Sort
+- View signatures
+- View approval status
+- Download/Print voucher
+
+Voucher Workflow
+
+Draft
+
+↓
+
+Submitted
+
+↓
+
+Pending Approval
+
+↓
+
+Approved
+
+↓
+
+Accounts Team
+
+or
+
+Rejected
+
+↓
+
+Employee sees rejection reason.
+
+Voucher Fields
+
+Voucher Number (auto-generated)
+Voucher Date
+Expense Date
+Department
+Expense Title
+Expense Category
+Expense Description
+Amount
+Employee Name
+Employee ID
+Employee Signature
+Director Signature
+Approval Date
+Status
+Rejection Reason
+Created Date
+Updated Date
+
+Dashboards
+
+Employee Dashboard
+- Total vouchers
+- Draft
+- Pending
+- Approved
+- Rejected
+- Total Amount
+
+Director Dashboard
+- Pending approvals
+- Approved today
+- Rejected today
+- Pending amount
+- Recent activity
+
+Accounts Dashboard
+- Total vouchers
+- Approved vouchers
+- Pending
+- Rejected
+- Total approved amount
+- Recent reimbursements
+
+Validation Rules
+
+Department required.
+Expense Title required.
+Expense Date required.
+Amount > 0.
+Employee Signature required before submit.
+Director Signature required before approval.
+Rejection Reason required before rejection.
+
+Business Rules
+
+Voucher Number unique.
+Voucher Number auto generated.
+New voucher starts as Draft.
+Employee edits only Draft.
+Submitted vouchers become read-only.
+Approved vouchers become read-only.
+Only Director approves/rejects.
+Employee sees only own vouchers.
+
+UI Requirements
+
+Create a premium SaaS UI inspired by Linear, Stripe, Notion and Vercel.
+
+Use:
+- Glassmorphism
+- Dark theme
+- Framer Motion animations
+- Responsive design
+- Sidebar navigation
+- Dashboard cards
+- Tables
+- Charts
+- Toast notifications
+- Loading spinner
+
+Generate:
+- Complete frontend
+- Complete backend
+- SQL schema
+- REST APIs
+- .env.example
+- README
+- Folder structure
+
+The project must compile and run successfully without errors.

@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Expense Voucher Management"
+version = "1.0.0"
+id = "artifacts/expense-voucher"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19084
+
+[services.development]
+run = "pnpm --filter @workspace/expense-voucher run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/expense-voucher", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/expense-voucher/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19084"
+BASE_PATH = "/"

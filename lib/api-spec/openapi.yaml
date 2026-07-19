@@ -3,20 +3,28 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Expense Voucher Management System API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: vouchers
+    description: Voucher operations
+  - name: dashboard
+    description: Dashboard stats
+  - name: uploads
+    description: File upload operations
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +32,622 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Get current authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current user info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /vouchers:
+    get:
+      operationId: listVouchers
+      tags: [vouchers]
+      summary: List vouchers (filtered by role)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, submitted, pending_approval, approved, rejected]
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: department
+          in: query
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of vouchers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VoucherListResponse"
+    post:
+      operationId: createVoucher
+      tags: [vouchers]
+      summary: Create a new voucher (Employee only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VoucherInput"
+      responses:
+        "201":
+          description: Voucher created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Voucher"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /vouchers/{id}:
+    get:
+      operationId: getVoucher
+      tags: [vouchers]
+      summary: Get a single voucher
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Voucher details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Voucher"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateVoucher
+      tags: [vouchers]
+      summary: Update a draft voucher (Employee only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VoucherUpdate"
+      responses:
+        "200":
+          description: Voucher updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Voucher"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteVoucher
+      tags: [vouchers]
+      summary: Delete a draft voucher (Employee only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /vouchers/{id}/submit:
+    post:
+      operationId: submitVoucher
+      tags: [vouchers]
+      summary: Submit a draft voucher for approval
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Voucher submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Voucher"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /vouchers/{id}/approve:
+    post:
+      operationId: approveVoucher
+      tags: [vouchers]
+      summary: Approve a submitted voucher (Director only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VoucherApproval"
+      responses:
+        "200":
+          description: Voucher approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Voucher"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /vouchers/{id}/reject:
+    post:
+      operationId: rejectVoucher
+      tags: [vouchers]
+      summary: Reject a submitted voucher (Director only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VoucherRejection"
+      responses:
+        "200":
+          description: Voucher rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Voucher"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /dashboard/employee:
+    get:
+      operationId: getEmployeeDashboard
+      tags: [dashboard]
+      summary: Get employee dashboard stats
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Employee dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmployeeDashboard"
+
+  /dashboard/director:
+    get:
+      operationId: getDirectorDashboard
+      tags: [dashboard]
+      summary: Get director dashboard stats
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Director dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DirectorDashboard"
+
+  /dashboard/accounts:
+    get:
+      operationId: getAccountsDashboard
+      tags: [dashboard]
+      summary: Get accounts team dashboard stats
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Accounts dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountsDashboard"
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    User:
+      type: object
+      required: [id, email, name, role, employeeId, department]
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum: [employee, director, accounts]
+        employeeId:
+          type: string
+        department:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    AuthResponse:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+
+    Voucher:
+      type: object
+      required: [id, voucherNumber, voucherDate, status, employeeId, employeeName, employeeUserId, department, expenseTitle, expenseCategory, expenseDate, amount, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        voucherNumber:
+          type: string
+        voucherDate:
+          type: string
+          format: date
+        expenseDate:
+          type: string
+          format: date
+        department:
+          type: string
+        expenseTitle:
+          type: string
+        expenseCategory:
+          type: string
+        expenseDescription:
+          type: ["string", "null"]
+        amount:
+          type: number
+        employeeName:
+          type: string
+        employeeId:
+          type: string
+        employeeUserId:
+          type: integer
+        employeeSignatureUrl:
+          type: ["string", "null"]
+        directorSignatureUrl:
+          type: ["string", "null"]
+        approvalDate:
+          type: ["string", "null"]
+          format: date-time
+        status:
+          type: string
+          enum: [draft, submitted, pending_approval, approved, rejected]
+        rejectionReason:
+          type: ["string", "null"]
+        approvedBy:
+          type: ["integer", "null"]
+        approvedByName:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    VoucherListResponse:
+      type: object
+      required: [vouchers, total, page, limit]
+      properties:
+        vouchers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Voucher"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    VoucherInput:
+      type: object
+      required: [department, expenseTitle, expenseCategory, expenseDate, amount, voucherDate]
+      properties:
+        voucherDate:
+          type: string
+          format: date
+        expenseDate:
+          type: string
+          format: date
+        department:
+          type: string
+        expenseTitle:
+          type: string
+        expenseCategory:
+          type: string
+        expenseDescription:
+          type: string
+        amount:
+          type: number
+
+    VoucherUpdate:
+      type: object
+      properties:
+        voucherDate:
+          type: string
+          format: date
+        expenseDate:
+          type: string
+          format: date
+        department:
+          type: string
+        expenseTitle:
+          type: string
+        expenseCategory:
+          type: string
+        expenseDescription:
+          type: string
+        amount:
+          type: number
+
+    VoucherApproval:
+      type: object
+      required: [directorSignatureUrl]
+      properties:
+        directorSignatureUrl:
+          type: string
+
+    VoucherRejection:
+      type: object
+      required: [rejectionReason]
+      properties:
+        rejectionReason:
+          type: string
+
+    RecentActivity:
+      type: object
+      required: [id, voucherNumber, employeeName, amount, status, updatedAt]
+      properties:
+        id:
+          type: integer
+        voucherNumber:
+          type: string
+        employeeName:
+          type: string
+        amount:
+          type: number
+        status:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+
+    EmployeeDashboard:
+      type: object
+      required: [total, draft, submitted, pendingApproval, approved, rejected, totalAmount]
+      properties:
+        total:
+          type: integer
+        draft:
+          type: integer
+        submitted:
+          type: integer
+        pendingApproval:
+          type: integer
+        approved:
+          type: integer
+        rejected:
+          type: integer
+        totalAmount:
+          type: number
+        recentVouchers:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecentActivity"
+
+    DirectorDashboard:
+      type: object
+      required: [pendingApprovals, approvedToday, rejectedToday, pendingAmount]
+      properties:
+        pendingApprovals:
+          type: integer
+        approvedToday:
+          type: integer
+        rejectedToday:
+          type: integer
+        pendingAmount:
+          type: number
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecentActivity"
+
+    AccountsDashboard:
+      type: object
+      required: [total, approved, pending, rejected, totalApprovedAmount]
+      properties:
+        total:
+          type: integer
+        approved:
+          type: integer
+        pending:
+          type: integer
+        rejected:
+          type: integer
+        totalApprovedAmount:
+          type: number
+        recentReimbursements:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecentActivity"
