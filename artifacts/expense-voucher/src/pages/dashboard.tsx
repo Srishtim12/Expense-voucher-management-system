@@ -2,7 +2,10 @@ import { useAuth } from "@/lib/auth-context";
 import { 
   useGetEmployeeDashboard, 
   useGetDirectorDashboard, 
-  useGetAccountsDashboard 
+  useGetAccountsDashboard,
+  getGetEmployeeDashboardQueryKey,
+  getGetDirectorDashboardQueryKey,
+  getGetAccountsDashboardQueryKey,
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
@@ -19,13 +22,13 @@ export default function Dashboard() {
   const isAccounts = user?.role === "accounts";
 
   const { data: employeeData, isLoading: empLoading } = useGetEmployeeDashboard({
-    query: { enabled: isEmployee }
+    query: { enabled: isEmployee, queryKey: getGetEmployeeDashboardQueryKey() }
   });
   const { data: directorData, isLoading: dirLoading } = useGetDirectorDashboard({
-    query: { enabled: isDirector }
+    query: { enabled: isDirector, queryKey: getGetDirectorDashboardQueryKey() }
   });
   const { data: accountsData, isLoading: accLoading } = useGetAccountsDashboard({
-    query: { enabled: isAccounts }
+    query: { enabled: isAccounts, queryKey: getGetAccountsDashboardQueryKey() }
   });
 
   const isLoading = empLoading || dirLoading || accLoading;

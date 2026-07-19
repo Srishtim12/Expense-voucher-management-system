@@ -38,6 +38,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(res.token);
       setTokenState(res.token);
       setUser(getUser());
+      // Redirect to the page they came from, or dashboard
+      const params = new URLSearchParams(window.location.search);
+      const redirectTo = params.get("redirect") || "/dashboard";
+      setLocation(redirectTo);
     } catch (e: any) {
       toast({
         title: "Login failed",
