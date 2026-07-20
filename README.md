@@ -40,6 +40,9 @@ Run database migrations before starting the application.
 - Employees can edit only draft vouchers.
 - Approved vouchers are processed only by Accounts.
 
+## Live Demo
+https://expense-voucher-manager--srishtim1205.replit.app
+
 ## Repository
 
 GitHub Repository:
